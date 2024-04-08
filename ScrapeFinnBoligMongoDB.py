@@ -34,7 +34,7 @@ def GetInfoOfEachRealestate(BoligDoc,soup):
 
 BoligDoc = []
 
-BoligUrl = "https://www.finn.no/realestate/homes/search.html?filters="
+BoligUrl = "https://www.finn.no/search/savedsearch?alertId=70732026"
 BoligResponse = requests.get(BoligUrl)
 BoligContent = BoligResponse.content
 
@@ -55,7 +55,7 @@ for PageNum in range(NextPageNum,100):
     NextUrl = 'https://m.finn.no' + NextPage
     NextResponse = requests.get(NextUrl)
     NextHtml = NextResponse.content
-    print PageNum
+    print(  PageNum )
     NextSoup = BeautifulSoup(NextHtml,"html.parser")
     TotalBoligDoc = GetInfoOfEachRealestate(BoligDoc,NextSoup)    
 
@@ -104,7 +104,7 @@ boligwordcloud = WordCloud(background_color="white",max_words=2000,mask=norway_m
 
 # Generate word cloud
 boligwordcloud.generate_from_frequencies(dict(worddicclean))
-#print worddicclean
+#  worddicclean )
 
 
 # Store to file
