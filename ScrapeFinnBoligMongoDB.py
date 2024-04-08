@@ -22,9 +22,9 @@ import matplotlib.pyplot as plt
 # Get Bolig information in each page
 
 def GetInfoOfEachRealestate(BoligDoc,soup):
-    for ParentalTag in soup.find_all('div','unit flex align-items-stretch result-item'):
-        BoligFinnCode = ParentalTag.contents[1].get('id')
-        BoligTitle = ParentalTag.contents[1].find_all('h3')[0].string
+    for ParentalTag in soup.find_all("a","sf-search-ad-link link link--dark hover:no-underline"):
+        BoligFinnCode = ParentalTag.get('id')
+        BoligTitle = ParentalTag.getText()
         EachBoligDoc = {'boligfinncode': BoligFinnCode,
                         'boligtitle':BoligTitle}  
         BoligDoc.append(EachBoligDoc)

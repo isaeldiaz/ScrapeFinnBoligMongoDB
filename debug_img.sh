@@ -1,1 +1,1 @@
-docker run -v ./:/usr/src/app -it --rm  scrap_img
+docker run -v ./:/usr/src/app -it --rm --entrypoint python  scrap_img -m pdb ScrapeFinnBoligMongoDB.py
