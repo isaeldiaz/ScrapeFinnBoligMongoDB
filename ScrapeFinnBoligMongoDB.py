@@ -44,9 +44,13 @@ BoligDoc = GetInfoOfEachRealestate(BoligDoc,BoligSoup)
 
 # Find the next page number
 
-InitialTagsForNextPage = BoligSoup.find_all('div','t4 centerify r-margin')[0]
-SecondPage = InitialTagsForNextPage.find_all('a',class_='pam')[0].get('href')
-NextPageNum = int(re.findall(r'page=(\d+)', SecondPage)[0])
+InitialTagsForNextPage = BoligSoup.find('nav','pagination u-pb8 u-pt16')
+LastPageTag = InitialTagsForNextPage.find_all('a')[-1]
+LastPageMatch = re.search(r'page=(\d+)', str(LastPageTag))
+if LastPageMatch:
+    LastPageNum = int(LastPageMatch.group(1))
+
+#TODO Iterate thru the pages
 
 # Go to the rest pages
 
