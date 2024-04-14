@@ -61,7 +61,7 @@ def GetRawContent(content_src):
     return BilSoup
 
 # Start from first page
-debug = True
+debug = False
 BilDB = []
 
 if debug:
@@ -77,7 +77,7 @@ else:
 # Iteration through result pages
 for page_idx in range(1,MAX_PAGES+1):
     content_source = content_src + '&page=' + str(page_idx)
-    BilSoup = GetRawContent(content_src)
+    BilSoup = GetRawContent(content_source)
     EachPageBilDoc = GetInfoOfEachSearchPage(BilSoup) 
     if EachPageBilDoc is None:
         break
