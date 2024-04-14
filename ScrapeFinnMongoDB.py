@@ -21,34 +21,55 @@ import matplotlib.pyplot as plt
 
 # Get Bil information in each page
 
-def GetInfoOfEachSearchPage(BilDoc,soup):
-    for FoundTag in soup.find_all('a',{'class', 'sf-search-ad-link link link--dark hover:no-underline'}):
-        BilFinnCode = FoundTag.get('id')
-        BilTitle = FoundTag.getText()
+def GetNumValue(text_src):
+    stripped_text= "".join(text_src.split())
+    match = re.search(r'\d+', stripped_text)
+    if match:
+        return match.group(0)
+    return None
+
+def GetInfoOfEachSearchPage(soup):
+    BilList=[]
+    for ParentTag in soup.find_all('div', {'class', 'flex flex-col'}):
+        FoundTitleTag = ParentTag.find('a',{'class', 'sf-search-ad-link link link--dark hover:no-underline'})
+        BilFinnCode = FoundTitleTag.get('id')
+        BilTitle = FoundTitleTag.getText()
+        FoundYearKmPriceTag = ParentTag.find('div', {'class', 'mb-8 flex justify-between whitespace-nowrap font-bold'})
+        FoundYearKmPriceMatch = FoundYearKmPriceTag.find_all('span')
+        BilYear = FoundYearKmPriceMatch[0].getText()
+        BilKm = GetNumValue(FoundYearKmPriceMatch[1].getText())
+        BilPrice = GetNumValue(FoundYearKmPriceMatch[2].getText())
+        print(BilKm)
         EachBilDoc = {'ad_finncode': BilFinnCode,
-                        'ad_title':BilTitle}  
-        BilDoc.append(EachBilDoc)
-    return BilDoc
+                      'ad_year': BilYear,
+                      'ad_km': BilKm,
+                      'ad_price': BilPrice,
+                      'ad_title':BilTitle}  
+        BilList.append(EachBilDoc)
+    return BilList
 
 def GetRawContent(content_src):
+    BilSoup = None
     if debug:
         with open(content_src, 'r') as html_file:
             BilSoup = BeautifulSoup(html_file.read(), "html.parser")
     else:
         BilResponse = requests.get(content_src)
-        BilContent = BilResponse.content
-        BilSoup = BeautifulSoup(BilContent,"html.parser")
+        if (BilResponse):
+            BilContent = BilResponse.content
+            BilSoup = BeautifulSoup(BilContent,"html.parser")
     return BilSoup
 
 # Start from first page
 debug = True
-BilDoc = []
+BilDB = []
 
 if debug:
     content_src='./example/finn_search_example.html'
     MAX_PAGES=1
 else:
-    content_src = "https://www.finn.no/search/savedsearch?alertId=70732026"
+    # NOTE: The link below is fetched by right clicking on the link to the number one of the result page at the botton.
+    content_src = 'https://www.finn.no/car/used/search.html?model=1.795.1247&sales_form=1&stored-id=70732026'
     MAX_PAGES=100
 
 
@@ -57,16 +78,19 @@ else:
 for page_idx in range(1,MAX_PAGES+1):
     content_source = content_src + '&page=' + str(page_idx)
     BilSoup = GetRawContent(content_src)
-    BilDoc = GetInfoOfEachSearchPage(BilDoc,BilSoup) 
-    print('page'+str(page_idx))
+    EachPageBilDoc = GetInfoOfEachSearchPage(BilSoup) 
+    if EachPageBilDoc is None:
+        break
+    BilDB.extend(EachPageBilDoc)
+    print('page ' + str(page_idx))
+# print(BilDB)
 
-print(BilDoc)
 
 
 # # Save collected ad information to MongoDB
 # clientmongo = MongoClient(host = "localhost", port=27017)
 # databasehandler = clientmongo["FinnBilDB"]
-# for EachBilDoc in BilDoc:
+# for EachBilDoc in BilDB:
     # databasehandler.ad_collection.insert(EachBilDoc,safe=True)
 
 # # Fetch all ad title

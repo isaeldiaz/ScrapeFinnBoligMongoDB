@@ -18,6 +18,6 @@ EXPOSE 80
 ENV NAME World
 
 # Run ScrapeFinnBoligMongoDB.py when the container launches
-#CMD ["python", "./ScrapeFinnBoligMongoDB.py"]
+#CMD ["python", "./ScrapeFinnMongoDB.py"]
 CMD ["/bin/bash"]
 
