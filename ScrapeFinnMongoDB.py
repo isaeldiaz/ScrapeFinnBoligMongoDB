@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 # Get Bil information in each page
 
@@ -101,6 +102,14 @@ plt.plot(x_line, y_estimated, color='blue')
 plt.savefig('plot.png')
 # plt.xlabel['Km']
 # plt.ylabel['Price']
+
+csv_file = 'bil_data.csv'
+with open(csv_file, mode='w', newline='') as file:
+    writer =csv.DictWriter(file, fieldnames=BilDB[0].keys())
+    writer.writeheader()
+
+    for row in BilDB:
+        writer.writerow(row)
 
 
 
