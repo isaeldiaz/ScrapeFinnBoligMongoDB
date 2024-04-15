@@ -5,17 +5,9 @@ Created on Mon Mar 27 20:59:32 2017
 @author: qiangwennorge
 """
 
-from pymongo import MongoClient
 import requests
 from bs4 import BeautifulSoup
 import re
-import pymongo
-import string
-from nltk.corpus import stopwords
-import operator
-from wordcloud import WordCloud, STOPWORDS
-from os import path
-from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -39,12 +31,13 @@ def GetInfoOfEachSearchPage(soup):
         BilYear = FoundYearKmPriceMatch[0].getText()
         BilKm = GetNumValue(FoundYearKmPriceMatch[1].getText())
         BilPrice = GetNumValue(FoundYearKmPriceMatch[2].getText())
-        EachBilDoc = {'ad_finncode': BilFinnCode,
-                      'ad_year': BilYear,
-                      'ad_km': BilKm,
-                      'ad_price': BilPrice,
-                      'ad_title':BilTitle}  
-        BilList.append(EachBilDoc)
+        if BilPrice is not None and  BilKm is not None :
+            EachBilDoc = {'ad_finncode': BilFinnCode,
+                          'ad_year': BilYear,
+                          'ad_km': BilKm,
+                          'ad_price': BilPrice,
+                          'ad_title':BilTitle}  
+            BilList.append(EachBilDoc)
     return BilList
 
 def GetRawContent(content_src):
@@ -85,66 +78,29 @@ for page in content_src:
 
 print('Total entries found:', len(BilDB))
 
+prices=[]
+kms=[]
+for entry in BilDB:
+    price_int=int(entry['ad_price'])
+    prices.append(price_int)
+    km_int=int(entry['ad_km'])
+    kms.append(km_int)
 
-# # Save collected ad information to MongoDB
-# clientmongo = MongoClient(host = "localhost", port=27017)
-# databasehandler = clientmongo["FinnBilDB"]
-# for EachBilDoc in BilDB:
-    # databasehandler.ad_collection.insert(EachBilDoc,safe=True)
-
-# # Fetch all ad title
-# BilCollectionDoc = databasehandler.ad_collection.find()
-# BilTitleTextSum = ""
-# for doc in BilCollectionDoc[2:]:
-    # BilTitleText = doc.get("ad_title")
-    # BilTitleTextSum = BilTitleTextSum + " " + BilTitleText
-
-# BilTitleTextSum = BilTitleTextSum.replace(string.punctuation,"")
-
-# # Count word frequency
-# worddic = {}
-# for word in BilTitleTextSum.split():
-    # if word not in worddic:
-        # worddic[word] = 1
-    # else:
-        # worddic[word] = worddic[word] + 1
-
-# # Sort word based on frequency
-# worddicsorted = sorted(worddic.items(),key=operator.itemgetter(1),reverse=True)
-
-# # Define stopwords
-# stop_words = ['-','og','med','i','til','|','fra','av','på','1','2','3','4','5','6','7','8','9','0']
-
-# # Remove stopwords
-# worddicclean = []
-# for k,v in worddicsorted:
-    # if k not in stop_words:
-        # worddicclean.append((k,v))
-
-# # Define path
-# d = path.dirname(__file__)
-
-# # Read the mask image
-# norway_mask = np.array(Image.open(path.join(d,"norwaymap.jpg")))
-
-# ad_wordcloud = WordCloud(background_color="white",max_words=2000,mask=norway_mask,stopwords=stop_words)
-
-# # Generate word cloud
-# ad_wordcloud.generate_from_frequencies(dict(worddicclean))
-# #  worddicclean )
+price_array = np.array(prices)
+km_array = np.array(kms)
+coeff = np.polyfit(km_array, price_array, 1)
+estPrice_per_km = np.poly1d(coeff)
+print(estPrice_per_km(65000))
 
 
-# # Store to file
-# ad_wordcloud.to_file(path.join(d,"norwaymap_mask_output.png"))
+x_line = np.linspace(min(kms), max(kms), 200)
+y_estimated = estPrice_per_km(x_line)
+plt.scatter(kms, prices, color='black')
+plt.plot(x_line, y_estimated, color='blue')
 
-# # Show
-# plt.imshow(ad_wordcloud,interpolation='bilinear')
-# plt.axis("off")
-# plt.figure()
-# plt.imshow(norway_mask,cmap=plt.cm.gray,interpolation='bilinear')
-# plt.axis("off")
-# plt.show()
+plt.savefig('plot.png')
+# plt.xlabel['Km']
+# plt.ylabel['Price']
 
-# # General a word cloud image
 
-# #d = path.dirname(__file__)
+
