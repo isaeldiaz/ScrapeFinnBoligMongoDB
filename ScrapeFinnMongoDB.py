@@ -39,7 +39,6 @@ def GetInfoOfEachSearchPage(soup):
         BilYear = FoundYearKmPriceMatch[0].getText()
         BilKm = GetNumValue(FoundYearKmPriceMatch[1].getText())
         BilPrice = GetNumValue(FoundYearKmPriceMatch[2].getText())
-        print(BilKm)
         EachBilDoc = {'ad_finncode': BilFinnCode,
                       'ad_year': BilYear,
                       'ad_km': BilKm,
@@ -61,30 +60,30 @@ def GetRawContent(content_src):
     return BilSoup
 
 # Start from first page
-debug = False
+debug = True
 BilDB = []
 
 if debug:
-    content_src='./example/finn_search_example.html'
-    MAX_PAGES=1
+    content_src = ['./example/finn_search_example.html',
+                   './example/finn_search_example2.html',
+                   './example/finn_search_example3.html']
 else:
     # NOTE: The link below is fetched by right clicking on the link to the number one of the result page at the botton.
-    content_src = 'https://www.finn.no/car/used/search.html?model=1.795.1247&sales_form=1&stored-id=70732026'
-    MAX_PAGES=100
+    content_src = ['https://www.finn.no/car/used/search.html?model=1.795.1247&sales_form=1&stored-id=70732026', 
+                   'https://www.finn.no/car/used/search.html?model=1.795.1247&sales_form=1&stored-id=70732026&page=2',
+                   'https://www.finn.no/car/used/search.html?model=1.795.1247&sales_form=1&stored-id=70732026&page=3']
 
 
 
 # Iteration through result pages
-for page_idx in range(1,MAX_PAGES+1):
-    content_source = content_src + '&page=' + str(page_idx)
-    BilSoup = GetRawContent(content_source)
+for page in content_src:
+    BilSoup = GetRawContent(page)
     EachPageBilDoc = GetInfoOfEachSearchPage(BilSoup) 
     if EachPageBilDoc is None:
         break
     BilDB.extend(EachPageBilDoc)
-    print('page ' + str(page_idx))
-# print(BilDB)
 
+print('Total entries found:', len(BilDB))
 
 
 # # Save collected ad information to MongoDB
